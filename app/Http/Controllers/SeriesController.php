@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class SeriesController extends Controller
 {
-    public function index() {
+    public function index(Request $request) {
         // Função ANTIGA que busca as Séries (Criando o Array na "mão")
         // $series = [
         //     'The Flash',
@@ -18,9 +18,16 @@ class SeriesController extends Controller
         // ];
         
         // Busca no DB todas as Séries
-        $series = Serie::all();
+        //$series = Serie::all();
      
-        return view('series.index', compact('series'));
+        //Faz a busca em ordem alfabetica
+        //query faz a consulta
+        //Ela vai ser ordernada oderBy
+        //retorna os dados com GET
+        $series = Serie::query()->orderBy('nome')->get();
+        $mensagem = $request-session()->get('mensagem')
+
+        return view('series.index', compact('series','mensagem'));
     }
 
     public function create ()
@@ -48,15 +55,20 @@ class SeriesController extends Controller
         
         // Aqui estamos pegando todo o Requeste com o métido All.
         // Então, todos os dados que vierem do formulário no Request ele vai pegar e mandar para Série(Serie).
-            $serie = Serie::create($request->all());
-
+            $series = Serie::create($request->all());
+            $request->session()
+            ->flash(
+                'mensagem',
+                "Série {$serie->id} criada com sucesso {$serie->nome}"
+            );
         /*
         *----------------------------------------------------------
         * Podemos inclusive pegar a "Serie" e exibir uma Mensagem
         *----------------------------------------------------------
+        *
+        *    echo "Série com id {$serie->id} criada: {(}$serie->nome}";
         */
-            echo "Série com id ($serie->id) criada: ($serie->nome)";
-        
+            return redirect('/series');
         /*
         * $nome = $request->nome;
         * $serie = new Serie(); --> Cria uma estância de SÉRIE
