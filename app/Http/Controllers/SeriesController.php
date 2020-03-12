@@ -2,9 +2,15 @@
 
 namespace App\Http\Controllers;
 // -----------------------------------------------------------------------------
-use App\Serie;
-use Illuminate\Http\Request;
+
+use App\Episodio;
 use App\Http\Requests\SeriesFormRequest;
+use App\Serie;
+use App\Services\CriadorDeSerie;
+use App\Services\RemovedorDeSerie;
+use App\Temporada;
+use Illuminate\Http\Request;
+
 // -----------------------------------------------------------------------------
 
 class SeriesController extends Controller
@@ -38,32 +44,14 @@ class SeriesController extends Controller
     }
 
     //Estamos pegando DA requisição o nome que foi enviado no campo nome do nosso create.blade.php
-    public function store(SeriesFormRequest $request)
+    public function store(SeriesFormRequest $request, CriadorDeSerie $criadorDeSerie)
     {
-        /*
-        * Create recebe por parametro um array associativo tendo os valores que quero passar para a nossa Model
-        * Serie::create([
-        *     'nome' => $nome
-        * ]);
-        *
-        *
-        *---------------------------------
-        * Definindo atributo por atributo
-        *---------------------------------
-        *    $nome = $request->nome;
-        *    $serie = Serie::create([
-        *        'nome' => $nome
-        *    ]);
-        *
-        *
-        * Aqui estamos pegando todo o Requeste com o métido All.
-        * Então, todos os dados que vierem do formulário no Request ele vai pegar e mandar para Série(Serie).
-        */ 
-        $serie = Serie::create($request->all());
+        $serie = $criadorDeSerie->criarSerie($request->nome, $request->qtd_temporadas, $request->ep_por_temporada);
+
         $request->session()
             ->flash(
                 'mensagem',
-                "Série {$serie->id} criada com sucesso {$serie->nome}"
+                "Série {$serie->id} e suas temporadas e episódios criados com sucesso {$serie->nome}"
             );
 
         /*
@@ -82,14 +70,23 @@ class SeriesController extends Controller
         */
     }
 
-    public function destroy(Request $request)
+    public function destroy(Request $request, RemovedorDeSerie $removedorDeSerie)
     {
-        Serie::destroy($request->id);
+        $nomeSerie = $removedorDeSerie->removerSerie($request->id);
+        // Serie::destroy($request->id);
         $request->session()
             ->flash(
                 'mensagem',
-                "Série removida com sucesso"
+                "Série $nomeSerie removida com sucesso"
             );
         return redirect()->route('listar_series');
+    }
+
+    public function editaNome(int $id, Request $request)
+    {
+        $serie = Serie::find($id);
+        $novoNome = $request->nome;
+        $serie->nome = $novoNome;
+        $serie->save();
     }
 }
