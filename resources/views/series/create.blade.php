@@ -6,15 +6,7 @@
 
 @section('conteudo')
 
-@if ($errors->any())
-<div class="alert alert-danger">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+@include('erros', ['errors' => $errors])
 
 <form method="post">
     <!-- Sempre que recebermos um post com dados de um formulário, o Laravel verificará se, junto com qualquer dado, foi enviado um token de verificação -->
